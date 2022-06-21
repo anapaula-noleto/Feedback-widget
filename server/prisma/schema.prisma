@@ -12,7 +12,7 @@ datasource db {
 
 // cria uma tabela no banco de dados com o nome feedbacks
 model Feedback {
-  id         Int     @id @default(autoincrement())
+  id         String  @id @default(uuid())
   type       String
   comment    String
   screenshot String?

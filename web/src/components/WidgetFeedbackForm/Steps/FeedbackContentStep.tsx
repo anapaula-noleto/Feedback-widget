@@ -1,7 +1,9 @@
 import { ArrowLeft } from "phosphor-react"
 import { FormEvent, useState } from "react"
 import { FeedbackType, feedbackTypes } from ".."
+import { api } from "../../../lib/api"
 import { CloseButton } from "../../CloseButton"
+import { Loading } from "../../Loading"
 import { ScreenshotButton } from "../ScreenshotButton"
 
 
@@ -12,66 +14,75 @@ interface FeedbackContentStepProps {
 }
 
 export function FeedbackContentStep({
-  feedbackType, 
+  feedbackType,
   onFeedbackRestartRequested,
   onFeedbackSent
 }: FeedbackContentStepProps) {
-
+  const [screenshot, setScreenshot] = useState<string | null>(null)
+  const [comment, setComment] = useState('')
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const feedbackTypeInfo = feedbackTypes[feedbackType]
 
-  function handleSubmitFeedback(e: FormEvent) {
+  async function handleSubmitFeedback(e: FormEvent) {
     e.preventDefault()
+    setIsSendingFeedback(true)
     console.log({
+      type: feedbackType,
       screenshot,
-      feedbackText,
+      comment,
     })
-
+    await api.post('/feedbacks', {
+      type: feedbackType,
+      screenshot,
+      comment,
+    })
+    // não precisaria colocar isso, mas ok é para treinar
+    setIsSendingFeedback(false)
     onFeedbackSent()
   }
 
-  const [screenshot, setScreenshot] = useState<string | null>(null)
-  const [feedbackText, setFeedbackText] = useState('')
+
 
   return (
     <>
       <header>
-        <button 
-          type="button" 
-          className="top-5 left-5 absolute text-zinc-400 hover:text-zinc-100" 
+        <button
+          type="button"
+          className="top-5 left-5 absolute text-zinc-400 hover:text-zinc-100"
           title="Voltar formulário de feedback"
           onClick={onFeedbackRestartRequested}
         >
-          <ArrowLeft weight="bold" className="w-4 h-4"/>
+          <ArrowLeft weight="bold" className="w-4 h-4" />
         </button>
 
         <span className="text-xl leading-6 flex items-center gap-2">
-          <img src={feedbackTypeInfo.image.source} alt={feedbackTypeInfo.image.alt} className="w-6 h-6"/>
+          <img src={feedbackTypeInfo.image.source} alt={feedbackTypeInfo.image.alt} className="w-6 h-6" />
           {feedbackTypeInfo.title}
         </span>
-        <CloseButton/>
+        <CloseButton />
 
       </header>
-    
+
       <form onSubmit={handleSubmitFeedback} className="my-4 w-full">
-        <textarea 
+        <textarea
           className="min-w-[250px] w-full min-h-[112px] text-sm placeholder-zinc-400 text-zinc-100 border-zinc-600 bg-transparent rounded-md focus:border-teal-500 focus:ring-teal-500 focus:ring-1 resize-none focus:outline-none scrollbar scrollbar-thumb-zinc-700 scrollbar-track-transparent"
           placeholder="Conte com detalhes o que está acontecendo..."
-          onChange={event => setFeedbackText(event.target.value)}
+          onChange={event => setComment(event.target.value)}
         />
 
         <footer className="flex gap-2 mt-2">
 
-          <ScreenshotButton 
-            screenshot = {screenshot}
+          <ScreenshotButton
+            screenshot={screenshot}
             onScreenshotTaken={setScreenshot}
           />
 
           <button
             type="submit"
-            disabled = {feedbackText.length === 0}
+            disabled={comment.length === 0 || isSendingFeedback}
             className="p-2 bg-teal-500 rounded-md border-transparent flex-1 flex justify-center items-center text-sm hover:bg-teal-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-teal-500 transition-colors disabled:opacity-50 disabled:hover:bg-teal-500"
           >
-            Enviar Feedback
+            {isSendingFeedback ? <Loading /> : 'Enviar Feedback'}
           </button>
         </footer>
 
