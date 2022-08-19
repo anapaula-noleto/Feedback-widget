@@ -12,6 +12,9 @@ npm run dev
 
 cd web
 npm run dev
+
+# Para verificar o banco de dados:
+npx prisma studio
 ```
 
 ### Tecnologias
