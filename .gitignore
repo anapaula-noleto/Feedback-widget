@@ -1,2 +1,4 @@
 node_modules
 anotations.md
+dist
+.vscode/
